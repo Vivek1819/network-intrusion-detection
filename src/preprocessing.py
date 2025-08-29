@@ -38,3 +38,7 @@ def preprocess_data(df):
     X_scaled = scaler.fit_transform(X)
 
     return X_scaled, y, scaler
+
+
+def get_binary_target(df):
+    return (df['attack_cat'] != 'Normal').astype(int)
