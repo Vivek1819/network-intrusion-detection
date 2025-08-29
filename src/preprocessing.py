@@ -1,33 +1,40 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-def load_and_preprocess(file_path, test_size=0.2, random_state=42):
-    df = pd.read_csv(file_path)
+def preprocess_data(df):
+    """
+    Cleans and preprocesses the UNSW-NB15 dataset.
 
-    # Drop useless cols
+    Steps:
+    - Drops unused columns
+    - Encodes categorical features
+    - Scales numerical features
+
+    Args:
+        df (pd.DataFrame): Raw dataset
+
+    Returns:
+        X (np.ndarray): Processed features
+        y (np.ndarray): Encoded target labels
+        scaler (StandardScaler): fitted scaler (for later use)
+    """
     drop_cols = ['id', 'srcip', 'sport', 'dstip', 'dsport', 'label']
     df = df.drop(columns=[c for c in drop_cols if c in df.columns])
 
-    # Encode categorical cols
+    # Encode categorical columns
     cat_cols = ['proto', 'service', 'state']
     for col in cat_cols:
-        if col in df.columns:
-            df[col] = LabelEncoder().fit_transform(df[col])
+        df[col] = LabelEncoder().fit_transform(df[col])
 
-    # Split X, y
+    # Encode target
+    y = df['attack_cat']
+    y = LabelEncoder().fit_transform(y)
+
     X = df.drop(columns=['attack_cat'])
-    y = LabelEncoder().fit_transform(df['attack_cat'])
-
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
-    )
-
+    
     # Scale
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    X_scaled = scaler.fit_transform(X)
 
-    return X_train, X_test, y_train, y_test
+    return X_scaled, y, scaler
